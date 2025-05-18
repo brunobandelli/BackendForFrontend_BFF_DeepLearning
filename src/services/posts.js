@@ -6,13 +6,12 @@ class PostsService {
     constructor() {
         this.#client = new Client('http://localhost:3001');
     }
-
+    
     /**
-     * 
      * @param {number} limit 
      */
 
-     async getPosts(limit = 2) {
+     async getPosts(limit = 5) {
             const response = await this.#client.request({
                 method: 'GET',
                 path: '/posts',
@@ -27,12 +26,34 @@ class PostsService {
 
                 posts.push({
                     id: post.id,
+                    authorId: post.authorId,
                     title: post.title,
                 })
             }
 
             return posts;
         }
-}
 
+
+     /**
+     * @param {number} id 
+     */
+
+     async getPost(id) {
+            const response = await this.#client.request({
+                method: 'GET',
+                path: `/posts/${id}`,
+            })
+
+            const data = await response.body.json();
+
+            return {
+                id: data.id,
+                title: data.title,
+                text: data.text,
+                authorId: data.authorId,
+            };
+        }
+}
+    
 module.exports = PostsService
