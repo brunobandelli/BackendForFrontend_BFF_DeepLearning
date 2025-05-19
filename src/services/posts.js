@@ -1,10 +1,10 @@
-const { Client } = require('undici')
+const Http = require('../utils/http');
 
 class PostsService {
     #client;
 
     constructor() {
-        this.#client = new Client('http://localhost:3001');
+        this.#client = new Http('http://127.0.0.1:3001');
     }
     
     /**
@@ -31,6 +31,7 @@ class PostsService {
                 })
             }
 
+
             return posts;
         }
 
@@ -40,12 +41,13 @@ class PostsService {
      */
 
      async getPost(id) {
-            const response = await this.#client.request({
+
+            const data = await this.#client.request({
                 method: 'GET',
                 path: `/posts/${id}`,
+            }, {
+                timeout: 5000,
             })
-
-            const data = await response.body.json();
 
             return {
                 id: data.id,

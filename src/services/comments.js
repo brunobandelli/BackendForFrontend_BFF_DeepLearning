@@ -1,10 +1,10 @@
-const { Client } = require('undici')
+const Http = require("../utils/http");
 
 class CommentsService {
     #client;
 
     constructor() {
-        this.#client = new Client('http://localhost:3002');
+        this.#client = new Http('http://localhost:3002');
     }
     
     /**
@@ -13,13 +13,14 @@ class CommentsService {
      */
 
      async getComments(postId, limit = 5) {
-            const response = await this.#client.request({
+            try {
+                const data = await this.#client.request({
                 method: 'GET',
                 path: '/comments',
                 query: {postId}
+            }, {
+                timeout: 5000,
             })
-
-            const data = await response.body.json();
 
             const comments = []
 
@@ -34,6 +35,9 @@ class CommentsService {
             }
 
             return comments;
+            } catch (error) {
+                return [];
+            }
         }
 }
     

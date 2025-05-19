@@ -1,24 +1,23 @@
-const { Client } = require('undici')
-
+const Http = require("../utils/http")
 class UsersService {
     #client;
 
     constructor() {
-        this.#client = new Client('http://localhost:3003');
+        this.#client = new Http('http://localhost:3003');
     }
     
     /**
-     * @param {number} ids 
+     * @param {number[]} ids 
      */
 
-     async getUsers(ids) {
-            const response = await this.#client.request({
+      async getUsers(ids) {
+            const data = await this.#client.request({
                 method: 'GET',
                 path: '/users',
                 query: { id: ids }
-            })
-
-            const data = await response.body.json();
+            }, {
+                timeout: 3000,
+            });
 
             const users = new Map()
 

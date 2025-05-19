@@ -21,8 +21,6 @@ class PostsController {
             post.authorId = undefined
         }
 
-        console.log(posts)
-
        return posts
     }
 
@@ -31,12 +29,13 @@ class PostsController {
  */
 
 async getPost (id){
+    try {
+
     //Fetch data
     const [post, comments] = await Promise.all([
         postsService.getPost(id),
         commentsService.getComments(id)
     ])
-
     //Mount user ids
     const userIds = new Set([post.authorId]);
     for (const comment of comments) {
@@ -53,16 +52,16 @@ async getPost (id){
         comment.userId = undefined;
     }
 
-    console.log({users})
-
     return {
         ...post,
         authorId: undefined,
         comments
     }
+    } catch (error) {
+        throw new Error('Fail to fetch post');
+    }
 }
 
-async 
 
 }
 
