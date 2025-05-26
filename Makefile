@@ -1,11 +1,14 @@
-# Instale o json-server na versão 0.
-# npm i -g json-server@^0
+# Instale o json-server em uma versão 0.x compatível com a flag -H
+# sudo npm install -g json-server@0.17.3
+# Para executar cada um, make posts/comments/users, rodar cada um em um terminal diferente.
 
 posts:
-	json-server external_apis/posts.json -p 3001 -H 0.0.0.0 --middlewares ./external_apis/random-delay.js
+	json-server external_apis/posts.json --port 3001 --host 0.0.0.0 --middlewares ./external_apis/random-delay.js
 
 comments:
-	json-server external_apis/comments.json -p 3002 -H 0.0.0.0 --middlewares ./external_apis/random-delay.js
+	json-server external_apis/comments.json --port 3002 --host 0.0.0.0 --middlewares ./external_apis/random-delay.js
 
 users:
-	json-server external_apis/users.json -p 3003 -H 0.0.0.0 --middlewares ./external_apis/random-delay.js
+	json-server external_apis/users.json --port 3003 --host 0.0.0.0 --middlewares ./external_apis/random-delay.js
+
+
