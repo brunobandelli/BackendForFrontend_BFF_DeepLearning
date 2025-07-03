@@ -11,6 +11,7 @@
   "description": "",
   "dependencies": {
     "fastify": "^5.3.3",
+    "opossum": "^9.0.0",
     "undici": "^7.9.0"
   }
 }

@@ -1,23 +1,20 @@
+const CircuitBreaker = require('opossum')
 const Http = require('../utils/http');
 
 class PostsService {
     #client;
+    #cbGetPosts;
+    #cbGetPost;
 
     constructor() {
         this.#client = new Http('http://127.0.0.1:3001');
-    }
-    
-    /**
-     * @param {number} limit 
-     */
-
-     async getPosts(limit = 5) {
-            const response = await this.#client.request({
+        this.#cbGetPosts = new CircuitBreaker(async (limit) => {
+            const data = await this.#client.request({
                 method: 'GET',
                 path: '/posts',
+            }, {
+                timeout: 5000,
             })
-
-            const data = await response.body.json();
 
             const posts = []
 
@@ -33,15 +30,12 @@ class PostsService {
 
 
             return posts;
-        }
-
-
-     /**
-     * @param {number} id 
-     */
-
-     async getPost(id) {
-
+        }, {
+            timeout: 1000,
+            errorThresholdPercentage: 90,
+        });
+        this.#cbGetPosts.fallback(() => [])
+        this.#cbGetPost = new CircuitBreaker(async (id) => {
             const data = await this.#client.request({
                 method: 'GET',
                 path: `/posts/${id}`,
@@ -55,6 +49,28 @@ class PostsService {
                 text: data.text,
                 authorId: data.authorId,
             };
+        },{
+            timeout: 1000,
+            errorThresholdPercentage: 90,
+        })
+        this.#cbGetPost.fallback(() => ({}))
+    }
+    
+    /**
+     * @param {number} limit 
+     */
+
+     async getPosts(limit = 5) {
+            return this.#cbGetPosts.fire(limit)
+        }
+
+
+     /**
+     * @param {number} id 
+     */
+
+     async getPost(id) {
+            return this.#cbGetPost.fire(id)
         }
 }
     

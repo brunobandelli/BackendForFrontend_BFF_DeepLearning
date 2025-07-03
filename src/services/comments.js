@@ -1,20 +1,14 @@
 const Http = require("../utils/http");
+const CircuitBreaker = require('opossum')
 
 class CommentsService {
     #client;
+    #cbGetComments
 
     constructor() {
         this.#client = new Http('http://localhost:3002');
-    }
-    
-    /**
-     * @param {number} postId 
-     * @param {number} limit
-     */
-
-     async getComments(postId, limit = 5) {
-            try {
-                const data = await this.#client.request({
+        this.#cbGetComments = new CircuitBreaker(async (postId, limit=5) => {
+            const data = await this.#client.request({
                 method: 'GET',
                 path: '/comments',
                 query: {postId}
@@ -35,9 +29,25 @@ class CommentsService {
             }
 
             return comments;
-            } catch (error) {
-                return [];
-            }
+        }, {
+            timeout: 1000,
+            errorThresholdPercentage: 10,
+            resetTimeout: 10000,
+        })
+        this.#cbGetComments.fallback(() => {
+            return []
+        })
+    }
+    
+    /**
+     * @param {number} postId 
+     * @param {number} limit
+     */
+
+     async getComments(postId, limit = 5) {
+            const { rejects, failures, fallbacks, successes} = this.#cbGetComments.stats;
+            console.log({ rejects, failures, fallbacks, successes });
+            return this.#cbGetComments.fire(postId, limit)
         }
 }
     

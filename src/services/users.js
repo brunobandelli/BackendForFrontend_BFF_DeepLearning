@@ -1,22 +1,18 @@
+const CircuitBreaker = require('opossum')
 const Http = require("../utils/http")
 class UsersService {
     #client;
+    #cbGetUsers
 
     constructor() {
         this.#client = new Http('http://localhost:3003');
-    }
-    
-    /**
-     * @param {number[]} ids 
-     */
-
-      async getUsers(ids) {
-            const data = await this.#client.request({
+        this.#cbGetUsers = new CircuitBreaker(async (ids)=> {
+             const data = await this.#client.request({
                 method: 'GET',
                 path: '/users',
                 query: { id: ids }
             }, {
-                timeout: 3000,
+                timeout: 5000,
             });
 
             const users = new Map()
@@ -26,6 +22,19 @@ class UsersService {
             }
 
             return users;
+        },{
+            timeout: 3000,
+            errorThresholdPercentage: 50,
+        })
+        this.#cbGetUsers.fallback(() => [])
+    }
+    
+    /**
+     * @param {number[]} ids 
+     */
+
+      async getUsers(ids) {
+           return this.#cbGetUsers.fire(ids)
         }
 }
     
